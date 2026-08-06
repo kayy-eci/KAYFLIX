@@ -1,7 +1,7 @@
 "use client";
 
-import NetflixCard, { type NetflixCardProps } from "./components/Cards";
-import NetflixHero from "./components/Hero";
+import NetflixCard, { type NetflixCardProps } from "../components/Cards";
+import NetflixHero from "../components/Hero";
 
 const ROW: NetflixCardProps[] = [
   {
@@ -79,13 +79,6 @@ const ROW: NetflixCardProps[] = [
 export default function NetflixDemo() {
   return (
     <div className="min-h-screen bg-[#141414]">
-      <NetflixHero
-        title="Demon Slayer: infinity castle"
-        meta={["Adegan kekerasan", "adegan bunuh diri", "2025", "2j 34m", "16+"]}
-        backgroundImage="./kny.webp" // taruh gambar di public/hero/
-        badgeText="Baru Ditambahkan"
-        rankText="Film No. 2" 
-      />
       <div className="pt-24 px-4 md:px-12 pb-20">
         <h2 className="text-white text-lg md:text-xl font-semibold mb-4">
           Popular on Kayflix
