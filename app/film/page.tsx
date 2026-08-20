@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 
 interface Film {
+    id: number;
     title: string;
     year: number;
     rating: string;
     duration: string;
-    genres: string[];
+    genres: string;
 }
 
 export default function MovieList() {
@@ -15,7 +16,7 @@ export default function MovieList() {
 
     useEffect(() => {
         async function fetchFilm() {
-            const response = await fetch("http://localhost:8000/api/movie");
+            const response = await fetch("http://localhost:8000/api/movies");
 
             const responseJson = await response.json();
 
@@ -72,7 +73,7 @@ export default function MovieList() {
                                 </td>
 
                                 <td className="px-4 py-3">
-                                    {item.genres.join(", ")}
+                                    {item.genres}
                                 </td>
 
                                 <td className="px-4 py-3">
