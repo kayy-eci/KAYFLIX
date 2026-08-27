@@ -6,12 +6,14 @@ import Link from "next/link";
 
 interface User {
   id: number;
+  username: string;
   email: string;
   password: string;
 }
 
-export default function Login() {
+export default function Register() {
   const [users, setDataUsers] = useState<User[]>([]);
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -34,25 +36,52 @@ export default function Login() {
     fetchUser();
   }, []);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (email.trim() === "" || password.trim() === "") {
+    if (!username.trim() || !email.trim() || !password.trim()) {
       alert("Form tidak boleh kosong");
       return;
     }
 
-    const user = users.find(
-      (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password
-    );
+    const clearEmail = email.trim().toLowerCase();
+    const existingUser = users.some((user) => user.email.toLowerCase() === clearEmail);
 
-    if (!user) {
-      alert("Email atau password salah");
+    if (existingUser) {
+      alert("Email sudah terdaftar");
       return;
     }
 
-    alert(`${email.trim()} berhasil login`);
-    router.push("/");
+    try {
+      const response = await fetch("http://localhost:8000/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          email: clearEmail,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Registration failed");
+      }
+
+      const responseJson = await response.json();
+      const createdUser = responseJson.data ?? {
+        username: username.trim(),
+        email: clearEmail,
+        password,
+      };
+
+      setDataUsers((prevUsers) => [...prevUsers, createdUser]);
+      alert(`${username.trim()} berhasil mendaftar`);
+      router.push("/login");
+    } catch {
+      alert("Gagal mendaftar. Coba lagi.");
+    }
   }
 
   return (
@@ -60,9 +89,16 @@ export default function Login() {
       <div className="relative z-10 w-full max-w-md bg-black/75 px-16 py-14 rounded">
         <h1 className="text-red-600 text-4xl font-extrabold mb-10 tracking-tight">KAYFLIX</h1>
 
-        <h2 className="text-white text-3xl font-bold mb-8">Sign In</h2>
+        <h2 className="text-white text-3xl font-bold mb-8">Sign up</h2>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={username}
+            placeholder="Enter your username"
+            className="w-full bg-zinc-700 text-white placeholder-gray-400 rounded px-4 py-4 outline-none focus:ring-2 focus:ring-white"
+            onChange={(e) => setUsername(e.target.value)}
+          />
           <input
             type="email"
             value={email}
@@ -79,15 +115,15 @@ export default function Login() {
             className="w-full bg-zinc-700 text-white placeholder-gray-400 rounded px-4 py-4 outline-none focus:ring-2 focus:ring-white"
           />
 
-          <Link href="/register" className="block text-white">
-            Don&apos;t have an account? Sign up here
+          <Link href="/login" className="block text-white">
+            Already have an account? Sign in here
           </Link>
 
           <button
             type="submit"
             className="w-full bg-red-600 hover:bg-red-700 transition text-white font-semibold py-3 rounded mt-2"
           >
-            Sign In
+            Sign Up
           </button>
         </form>
       </div>
