@@ -19,6 +19,7 @@ export default function MovieList() {
   const [duration, setDuration] = useState("");
   const [genres, setGenres] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchFilm() {
@@ -56,9 +57,11 @@ export default function MovieList() {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/api/movies",
+        editingId
+          ? `http://localhost:8000/api/movies/${editingId}`
+          : "http://localhost:8000/api/movies",
         {
-          method: "POST",
+          method: editingId ? "PUT" : "POST",
           headers: {
             "Content-Type": "application/json",
           },
@@ -86,10 +89,18 @@ export default function MovieList() {
         genres: genres.trim(),
       };
 
-      setDataFilms((prevFilms) => [
-        ...prevFilms,
-        createdMovie,
-      ]);
+      if (editingId) {
+        setDataFilms((prevFilms) => prevFilms.map((film) =>
+          film.id === editingId
+            ? { ...film, title: createdMovie.title, year: createdMovie.year, rating: createdMovie.rating, duration: createdMovie.duration, genres: createdMovie.genres }
+            : film
+        ));
+      } else {
+        setDataFilms((prevFilms) => [...prevFilms, {
+          ...createdMovie,
+          id: createdMovie.id ?? responseJson.data?.moviesId,
+        }]);
+      }
 
       setTitle("");
       setYear("");
@@ -98,10 +109,37 @@ export default function MovieList() {
       setGenres("");
 
       setShowForm(false);
+      setEditingId(null);
 
-      alert(`${title.trim()} berhasil ditambahkan`);
+      alert(editingId ? "Data film berhasil diupdate" : `${title.trim()} berhasil ditambahkan`);
     } catch {
       alert("Gagal menambahkan film. Coba lagi.");
+    }
+  }
+
+  function handleEdit(film: Film) {
+    setEditingId(film.id);
+    setTitle(film.title);
+    setYear(String(film.year));
+    setRating(film.rating);
+    setDuration(film.duration);
+    setGenres(film.genres);
+    setShowForm(true);
+  }
+
+  async function handleDelete(id: number, movieTitle: string) {
+    if (!window.confirm(`Hapus film "${movieTitle}"?`)) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/movies/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete movie");
+      setDataFilms((prevFilms) => prevFilms.filter((film) => film.id !== id));
+      alert(`${movieTitle} berhasil dihapus`);
+    } catch {
+      alert("Gagal menghapus film. Coba lagi.");
     }
   }
 
@@ -220,7 +258,10 @@ export default function MovieList() {
 
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                }}
                 className="rounded-lg border border-gray-600 px-4 py-2.5 font-medium text-gray-200 transition hover:bg-gray-800"
               >
                 Cancel
@@ -230,7 +271,7 @@ export default function MovieList() {
                 type="submit"
                 className="rounded-lg bg-red-600 px-4 py-2.5 font-semibold text-white transition hover:bg-red-500"
               >
-                Simpan Film
+                {editingId ? "Update Film" : "Simpan Film"}
               </button>
 
             </div>
@@ -292,6 +333,7 @@ export default function MovieList() {
 
                         <button
                           type="button"
+                          onClick={() => handleEdit(item)}
                           className="rounded-md bg-blue-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-600"
                         >
                           Edit
@@ -299,6 +341,7 @@ export default function MovieList() {
 
                         <button
                           type="button"
+                          onClick={() => handleDelete(item.id, item.title)}
                           className="rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-600"
                         >
                           Delete

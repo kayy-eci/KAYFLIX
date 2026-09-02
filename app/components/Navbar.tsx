@@ -35,7 +35,7 @@ export default function NetflixNavbar() {
 
   const menuItems = [
   { name: "Manage Profiles", href: "/profiles" },
-  { name: "Account", href: "/account" },
+  { name: "Settings", href: "/settings" },
   { name: "Help Center", href: "/help" },
 ];
 

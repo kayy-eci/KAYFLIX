@@ -6,6 +6,7 @@ import Link from "next/link";
 
 interface User {
   id: number;
+  username: string;
   email: string;
   password: string;
 }
@@ -52,6 +53,7 @@ export default function Login() {
     }
 
     alert(`${email.trim()} berhasil login`);
+    localStorage.setItem("kayflixUser", JSON.stringify(user));
     router.push("/");
   }
 
