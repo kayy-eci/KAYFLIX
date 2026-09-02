@@ -21,11 +21,16 @@ export default function Settings() {
     const savedUser = localStorage.getItem("kayflixUser");
     if (!savedUser) return;
 
-    const currentUser = JSON.parse(savedUser) as User;
-    setUser(currentUser);
-    setUsername(currentUser.username);
-    setEmail(currentUser.email);
-    setPassword(currentUser.password);
+    async function loadUser() {
+      const currentUser = JSON.parse(savedUser) as User;
+      await Promise.resolve();
+      setUser(currentUser);
+      setUsername(currentUser.username);
+      setEmail(currentUser.email);
+      setPassword(currentUser.password);
+    }
+
+    loadUser();
   }, []);
 
   async function handleUpdate(event: React.FormEvent) {
